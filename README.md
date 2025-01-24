@@ -53,13 +53,14 @@ Django-based web application for managing customers and orders with OpenID Conne
    pip install -r requirements.txt
    ```
 
-4. Set up your PostgreSQL database and create the necessary tables. (See [Database Schema](#database-schema) below)
+4. Set up your PostgreSQL database and create the necessary tables.
 
 5. Configure environment variables (see `.env` file setup in [Configuration](#configuration)).
 
 6. Apply database migrations:
 
    ```bash
+   python manage.py makemigrations
    python manage.py migrate
    ```
 
@@ -102,13 +103,6 @@ pip install -r requirements.txt
 ### Configure OpenID Connect
 1. Update `authentication/views.py` with your OpenID provider details
 2. Set environment variables for sensitive configurations
-
-### Database Setup
-```bash
-python manage.py makemigrations
-python manage.py migrate
-python manage.py createsuperuser
-```
 
 ## Running the Application
 ```bash
