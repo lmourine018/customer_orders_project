@@ -92,7 +92,6 @@ DB_PASSWORD=your_db_password
 DB_HOST=localhost
 DB_PORT=5432
 ```
-Make sure to replace the placeholders with your actual database credentials and configuration values.
 ---
 
 ### Install Dependencies
