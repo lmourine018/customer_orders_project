@@ -11,16 +11,15 @@ Django-based web application for managing customers and orders with OpenID Conne
 - Comprehensive testing and CI/CD setup
 ## Installation
 ## Prerequisites
-- Python 3.9+
-- Django 4.2.9
-- Django REST Framework
-- PostgreSQL 16+
-- Git installed
-- Virtualenv for virtual environment management
-- OpenID Connect Integration
-- Africa's Talking SMS Gateway
-- Unit Testing with Coverage
-- CI/CD Pipeline
+- **Python 3.9+**
+- **Django 4.2.9**
+- **PostgreSQL** 16+
+- **Git** installed
+- **Virtualenv** for virtual environment management
+- **OpenID Connect** Integration
+- **Africa's Talking** SMS Gateway
+- **Unit Testing** with Coverage
+- **CI/CD** Pipeline
 
 ## Steps
 1. Clone the repository:
