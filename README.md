@@ -28,8 +28,7 @@ Django-based web application for managing customers and orders with OpenID Conne
 
    ```bash
  git clone https://github.com/lmourine018/customer_orders_project.git
-
-   cd customer_orders_project
+ cd customer_orders_project
    ```
 
 2. Set up a Python virtual environment:
