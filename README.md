@@ -10,7 +10,7 @@ Django-based web application for managing customers and orders with OpenID Conne
 - OpenID Connect authentication
 - SMS notifications via Africa's Talking
 - Comprehensive testing and CI/CD setup
-  ## Installation
+## Installation
 ## Prerequisites
 - Python 3.9+
 - Django 4.2.9
