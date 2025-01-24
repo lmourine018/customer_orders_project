@@ -1,5 +1,4 @@
 # Customers and Orders Management System
-
 ## Overview
 Django-based web application for managing customers and orders with OpenID Connect authentication.
 
@@ -27,8 +26,8 @@ Django-based web application for managing customers and orders with OpenID Conne
 1. Clone the repository:
 
    ```bash
- git clone https://github.com/lmourine018/customer_orders_project.git
- cd customer_orders_project
+    git clone https://github.com/lmourine018/customer_orders_project.git
+    cd customer_orders_project
    ```
 
 2. Set up a Python virtual environment:
