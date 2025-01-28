@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +27,11 @@ SECRET_KEY = 'django-insecure-ys$$2m3zv@5d)5&q920y9qo@9@ym90#s_(jq9df-l@(eczd9o%
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+AUTH_USER_MODEL = 'customer_order_app.Customer'
 
+
+# If you're using credentials like cookies or HTTP authentication, enable this
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -38,20 +43,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'customer_order_app',
-    'oauth2_provider',
-    'mozilla_django_oidc'
+     'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.openid',
+    'oidc_provider',
 ]
+SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
-    "mozilla_django_oidc.auth.OIDCAuthenticationBackend",
-    "django.contrib.auth.backends.ModelBackend",  # Keeps the default authentication backend
+    "django.contrib.auth.backends.ModelBackend",
+    'allauth.account.auth_backends.AuthenticationBackend',
+
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        # Add other authentication classes if needed
+        'rest_framework.authentication.SessionAuthentication',
+
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -65,7 +76,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "mozilla_django_oidc.middleware.SessionRefresh",
+    'allauth.account.middleware.AccountMiddleware',
+    'mozilla_django_oidc.middleware.SessionRefresh',
 
 ]
 
@@ -101,6 +113,7 @@ DATABASES = {
 }
 
 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -134,27 +147,51 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+STATIC_URL = '/static/'
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SOCIALACCOUNT_PROVIDERS = {
+    'openid': {
+        'SCOPE': [
+            'openid',
+            'email',
+            'profile',
+        ],
+        'AUTH_PARAMS': {
+            'response_type': 'code',
+        },
+        'OAUTH2_PARAMS': {
+            'client_id': '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com',
+            'client_secret': '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',
+            'redirect_uri': 'http://localhost:7000/accounts/openid/login/callback/',
+        },
+        'EXCHANGE_TOKEN_URL': 'https://oauth2.googleapis.com/token',
+        'AUTHORIZATION_URL': 'https://accounts.google.com/o/oauth2/auth',
+        'USERINFO_URL': 'https://www.googleapis.com/oauth2/v3/userinfo',
+    }
+}
+LOGIN_REDIRECT_URL = '/customers/'  # Redirect to the home page after login
+LOGOUT_REDIRECT_URL = '/'  # Redirect to the home page after logout
 
+#
 # OIDC Configuration
 OIDC_RP_CLIENT_ID = 'fBw2P27uLpXEl5jzOrGGxEFAiKEDHDI0'
 OIDC_RP_CLIENT_SECRET = '-KipgUYXPW58mn5X300IJS6KeX6-uwutD1zoZUEA0jAi9Vum6pyQZmV1l1iUsaWR'
 OIDC_OP_AUTHORIZATION_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/authorize'
 OIDC_OP_TOKEN_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/token'
-OIDC_OP_USERINFO_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/userinfo'
+# OIDC_OP_USERINFO_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/userinfo'
 OIDC_OP_USER_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/userinfo'
 OIDC_OP_JWKS_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/.well-known/jwks.json'
-LOGIN_REDIRECT_URL = '/'
 # Additional recommended settings
 OIDC_AUTHENTICATE_CLASS = 'mozilla_django_oidc.views.OIDCAuthenticationRequestView'
 OIDC_RP_SIGN_ALGO = 'RS256'
 OIDC_RP_SCOPES = 'openid email profile'
 OIDC_TOKEN_REFRESH_RATE = 60 * 60  # Refresh token every hour
 OIDC_STORE_ACCESS_TOKEN = True
-UTH0_AUDIENCE = 'https://dev-2e8u3lymvt420516.us.auth0.com/api/v2/'
+AUTH0_AUDIENCE = 'https://dev-2e8u3lymvt420516.us.auth0.com/api/v2/'
+
+OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'

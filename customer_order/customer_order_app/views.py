@@ -1,15 +1,23 @@
+from tokenize import Token
+
+from django.contrib.auth import login
 from django.http import HttpResponse
 from django.views import View
 from mozilla_django_oidc.contrib.drf import OIDCAuthentication
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAuthenticated
+from allauth.account.forms import LoginForm
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Customer, Order
-from .serializer import CustomerSerializer, OrderSerializer
+from .serializer import CustomerSerializer, OrderSerializer, CustomerRegistrationSerializer, CustomerLoginSerializer
+
 
 class CustomerListAPIView(APIView):
+    authentication_classes = [OIDCAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         customers = Customer.objects.all()
         serializer = CustomerSerializer(customers, many=True)
@@ -31,8 +39,35 @@ class CustomerCreateAPIView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+class CustomerRegistrationView(APIView):
+    permission_classes = [AllowAny]  # This will allow access to anyone (no authentication needed)
+    def post(self, request, *args, **kwargs):
+        serializer = CustomerRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            customer = serializer.save()
+            return Response({
+                "message": "Customer registered successfully!",
+                "customer_id": customer.id,
+                "email": customer.email,
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CustomerLoginView(APIView):
+    class CustomerLoginView(APIView):
+        permission_classes = [AllowAny]
+        def post(self, request, *args, **kwargs):
+            # Use Allauth's LoginForm for validation
+            form = LoginForm(data=request.data)
+            if form.is_valid():
+                user = form.get_user()
+                if user:
+                    # Authenticate user and generate token
+                    token, created = Token.objects.get_or_create(user=user)
+                    return Response({
+                        'message': 'Login successful!',
+                        'token': token.key
+                    }, status=status.HTTP_200_OK)
+                return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid form'}, status=status.HTTP_400_BAD_REQUEST)
 class CustomerDetailAPIView(APIView):
     def get_customer(self,pk):
         try:
@@ -79,7 +114,6 @@ class OrderListAPIView(APIView):
         orders = Order.objects.all()
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
-
 class OrderCreateAPIView(APIView):
     authentication_classes = [OIDCAuthentication]
     permission_classes = [IsAuthenticated]
@@ -95,9 +129,9 @@ class OrderCreateAPIView(APIView):
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                serializer.save(user = request.user)
+                serializer.save(user=request.user)
                 return Response({"message": "Order created successfully!",
-               "data" : serializer.data}, status=status.HTTP_201_CREATED)
+                                 "data": serializer.data}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

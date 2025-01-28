@@ -1,7 +1,7 @@
 # urls.py
 from django.urls import path
 from .views import CustomerCreateAPIView, CustomerListAPIView, CustomerDetailAPIView, OrderCreateAPIView, \
-    OrderListAPIView, OrderDetailAPIView, CustomOIDCErrorView
+    OrderListAPIView, OrderDetailAPIView, CustomOIDCErrorView, CustomerRegistrationView, CustomerLoginView
 from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
 
 urlpatterns = [
@@ -13,4 +13,6 @@ urlpatterns = [
     path('orders/<int:pk>/', OrderDetailAPIView.as_view(), name='order-detail'),
     path('oidc/callback/', OIDCAuthenticationCallbackView.as_view(), name='oidc-callback'),
     path('oidc/error/', CustomOIDCErrorView.as_view(), name='oidc_error'),
+   path('register/', CustomerRegistrationView.as_view(), name='customer-register'),
+    path('login/', CustomerLoginView.as_view(), name='customer-login'),
 ]

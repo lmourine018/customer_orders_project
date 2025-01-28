@@ -21,5 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('customer_order_app.urls')),
     path("oidc/", include("mozilla_django_oidc.urls")),
+path('accounts/', include('allauth.urls')),
+    path('oidc/', include('oidc_provider.urls')),
 
 ]
