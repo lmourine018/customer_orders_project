@@ -9,12 +9,13 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-import os
-from datetime import timedelta
-from pathlib import Path
 
+from pathlib import Path
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+from datetime import timedelta
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,6 +27,11 @@ SECRET_KEY = 'django-insecure-ys$$2m3zv@5d)5&q920y9qo@9@ym90#s_(jq9df-l@(eczd9o%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env()
+
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'customer_order_app.Customer'
 
@@ -36,37 +42,52 @@ CORS_ALLOW_CREDENTIALS = True
 # Application definition
 
 INSTALLED_APPS = [
+    'customer_order_app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'customer_order_app',
-     'django.contrib.sites',
+    # 'mozilla_django_oidc'
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.openid',
-    'oidc_provider',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'oauth2_provider',
+    'social_django'
 ]
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
+    # 'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-
+    'oauth2_provider.backends.OAuth2Backend',
+    'social_core.backends.google.GoogleOAuth2',  # Example for Google OAuth2
+    'social_core.backends.oauth.OAuth2',  # Generic OAuth2
+    'social_core.backends.openid.OpenIDConnectBackend',  # OpenID Connect
 ]
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': 'your-secret-key',  # Use your Django SECRET_KEY here
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # OAuth2 Auth
 
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,9 +97,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
-    'mozilla_django_oidc.middleware.SessionRefresh',
-
+    # 'mozilla_django_oidc.middleware.SessionRefresh',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'customer_order.urls'
@@ -154,44 +174,50 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-SOCIALACCOUNT_PROVIDERS = {
-    'openid': {
-        'SCOPE': [
-            'openid',
-            'email',
-            'profile',
-        ],
-        'AUTH_PARAMS': {
-            'response_type': 'code',
+
+# LOGIN_REDIRECT_URL = '/accounts/profile'
+# LOGOUT_REDIRECT_URL = '/'
+# OIDC_RP_REDIRECT_URI = 'http://localhost:7000/oidc/callback/'  # This should match the OIDC provider's expected redirect URI
+# # OIDC Configuration
+# OIDC_RP_CLIENT_ID = env('OIDC_RP_CLIENT_ID', default='default_client_id')
+# OIDC_RP_CLIENT_SECRET = env('OIDC_RP_CLIENT_SECRET', default='default_client_secret')
+# OIDC_OP_AUTHORIZATION_ENDPOINT = env('OIDC_OP_AUTHORIZATION_ENDPOINT',default='https://dev-2e8u3lymvt420516.us.auth0.com/authorize')
+# OIDC_OP_TOKEN_ENDPOINT = env('OIDC_OP_TOKEN_ENDPOINT', default='https://dev-2e8u3lymvt420516.us.auth0.com/token')
+# OIDC_OP_USER_ENDPOINT = env('OIDC_OP_USER_ENDPOINT',default='https://dev-2e8u3lymvt420516.us.auth0.com/userinfo')
+# OIDC_OP_JWKS_ENDPOINT = env('OIDC_OP_JWKS_ENDPOINT',default='https://dev-2e8u3lymvt420516.us.auth0.com/.well-known/jwks.json')
+# # Additional recommended settings
+# OIDC_AUTHENTICATE_CLASS = 'mozilla_django_oidc.views.OIDCAuthenticationRequestView'
+# OIDC_RP_SIGN_ALGO = 'RS256'
+# OIDC_RP_SCOPES = 'openid email profile'
+# OIDC_TOKEN_REFRESH_RATE = 60 * 60  # Refresh token every hour
+# OIDC_STORE_ACCESS_TOKEN = True
+# AUTH0_AUDIENCE = 'https://dev-2e8u3lymvt420516.us.auth0.com/api/v2/'
+# OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
+# OIDC_CREATE_USER = False
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
         },
-        'OAUTH2_PARAMS': {
-            'client_id': '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com',
-            'client_secret': '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',
-            'redirect_uri': 'http://localhost:7000/accounts/openid/login/callback/',
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
         },
-        'EXCHANGE_TOKEN_URL': 'https://oauth2.googleapis.com/token',
-        'AUTHORIZATION_URL': 'https://accounts.google.com/o/oauth2/auth',
-        'USERINFO_URL': 'https://www.googleapis.com/oauth2/v3/userinfo',
-    }
+    },
 }
-LOGIN_REDIRECT_URL = '/customers/'  # Redirect to the home page after login
-LOGOUT_REDIRECT_URL = '/'  # Redirect to the home page after logout
 
-#
-# OIDC Configuration
-OIDC_RP_CLIENT_ID = 'fBw2P27uLpXEl5jzOrGGxEFAiKEDHDI0'
-OIDC_RP_CLIENT_SECRET = '-KipgUYXPW58mn5X300IJS6KeX6-uwutD1zoZUEA0jAi9Vum6pyQZmV1l1iUsaWR'
-OIDC_OP_AUTHORIZATION_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/authorize'
-OIDC_OP_TOKEN_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/token'
-# OIDC_OP_USERINFO_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/userinfo'
-OIDC_OP_USER_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/userinfo'
-OIDC_OP_JWKS_ENDPOINT = 'https://dev-2e8u3lymvt420516.us.auth0.com/.well-known/jwks.json'
-# Additional recommended settings
-OIDC_AUTHENTICATE_CLASS = 'mozilla_django_oidc.views.OIDCAuthenticationRequestView'
-OIDC_RP_SIGN_ALGO = 'RS256'
-OIDC_RP_SCOPES = 'openid email profile'
-OIDC_TOKEN_REFRESH_RATE = 60 * 60  # Refresh token every hour
-OIDC_STORE_ACCESS_TOKEN = True
-AUTH0_AUDIENCE = 'https://dev-2e8u3lymvt420516.us.auth0.com/api/v2/'
+# # Example for OAuth2 customization (Auth0 or custom provider)
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('GOOGLE_CLIENT_SECRET', default= 'secret_key')
+Authorized_redirect_URIs = 'http://localhost:7000/accounts/openid/login/callback/'
+SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/auth'  # Replace with the token URL
+SOCIAL_AUTH_OAUTH2_TOKEN_URL = 'https://oauth2.googleapis.com/token'  # Replace with the authorization URL
+SOCIAL_AUTH_OAUTH2_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'  # Replace with the user info URL
 
-OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'

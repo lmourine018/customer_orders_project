@@ -19,9 +19,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('customer_order_app.urls')),
-    path("oidc/", include("mozilla_django_oidc.urls")),
-path('accounts/', include('allauth.urls')),
-    path('oidc/', include('oidc_provider.urls')),
+    path('api/',include('customer_order_app.urls')),
+    path('accounts/', include('allauth.urls')),  # Allauth URLs
+    path('auth/', include('rest_framework.urls')),
 
 ]
