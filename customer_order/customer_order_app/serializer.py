@@ -5,7 +5,7 @@ from .models import Customer,Order
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ['id', 'name', 'code', 'email', 'phone_number', 'created_at']
+        fields = ['id', 'name', 'customer_code', 'email', 'phone_number', 'created_at']
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
@@ -19,10 +19,15 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id', 'customer', 'customer_id', 'item', 'amount', 'created_at', 'status']
 
+    def create(self, validated_data):
+        # handling customer property
+        customer = validated_data.pop('customer', None)
+        order = Order.objects.create(customer=customer, **validated_data)
+        return order
+
 
 class CustomerRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-
     class Meta:
         model = Customer
         fields = ['name', 'customer_code', 'email', 'phone_number', 'password']
@@ -44,15 +49,3 @@ class CustomerRegistrationSerializer(serializers.ModelSerializer):
         if Customer.objects.filter(customer_code=value).exists():
             raise serializers.ValidationError("A customer with this code already exists.")
         return value
-class CustomerLoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-
-    def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
-
-        customer = authenticate(email=email, password=password)
-        if customer is None:
-            raise serializers.ValidationError("Invalid login credentials")
-        return customer

@@ -11,13 +11,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+
+import africastalking
 import environ
+from django.conf import settings
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 from datetime import timedelta
-
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -49,7 +50,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'mozilla_django_oidc'
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -59,21 +59,20 @@ INSTALLED_APPS = [
     'social_django'
 ]
 SITE_ID = 1
-
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    # 'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
     'oauth2_provider.backends.OAuth2Backend',
-    'social_core.backends.google.GoogleOAuth2',  # Example for Google OAuth2
-    'social_core.backends.oauth.OAuth2',  # Generic OAuth2
-    'social_core.backends.openid.OpenIDConnectBackend',  # OpenID Connect
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.oauth.OAuth2',
+    'social_core.backends.openid.OpenIDConnectBackend',
 ]
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': 'your-secret-key',  # Use your Django SECRET_KEY here
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 REST_FRAMEWORK = {
@@ -97,7 +96,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'mozilla_django_oidc.middleware.SessionRefresh',
     'allauth.account.middleware.AccountMiddleware'
 ]
 
@@ -131,8 +129,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -175,25 +171,6 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# LOGIN_REDIRECT_URL = '/accounts/profile'
-# LOGOUT_REDIRECT_URL = '/'
-# OIDC_RP_REDIRECT_URI = 'http://localhost:7000/oidc/callback/'  # This should match the OIDC provider's expected redirect URI
-# # OIDC Configuration
-# OIDC_RP_CLIENT_ID = env('OIDC_RP_CLIENT_ID', default='default_client_id')
-# OIDC_RP_CLIENT_SECRET = env('OIDC_RP_CLIENT_SECRET', default='default_client_secret')
-# OIDC_OP_AUTHORIZATION_ENDPOINT = env('OIDC_OP_AUTHORIZATION_ENDPOINT',default='https://dev-2e8u3lymvt420516.us.auth0.com/authorize')
-# OIDC_OP_TOKEN_ENDPOINT = env('OIDC_OP_TOKEN_ENDPOINT', default='https://dev-2e8u3lymvt420516.us.auth0.com/token')
-# OIDC_OP_USER_ENDPOINT = env('OIDC_OP_USER_ENDPOINT',default='https://dev-2e8u3lymvt420516.us.auth0.com/userinfo')
-# OIDC_OP_JWKS_ENDPOINT = env('OIDC_OP_JWKS_ENDPOINT',default='https://dev-2e8u3lymvt420516.us.auth0.com/.well-known/jwks.json')
-# # Additional recommended settings
-# OIDC_AUTHENTICATE_CLASS = 'mozilla_django_oidc.views.OIDCAuthenticationRequestView'
-# OIDC_RP_SIGN_ALGO = 'RS256'
-# OIDC_RP_SCOPES = 'openid email profile'
-# OIDC_TOKEN_REFRESH_RATE = 60 * 60  # Refresh token every hour
-# OIDC_STORE_ACCESS_TOKEN = True
-# AUTH0_AUDIENCE = 'https://dev-2e8u3lymvt420516.us.auth0.com/api/v2/'
-# OIDC_DRF_AUTH_BACKEND = 'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
-# OIDC_CREATE_USER = False
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -213,11 +190,10 @@ LOGGING = {
     },
 }
 
-# # Example for OAuth2 customization (Auth0 or custom provider)
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com')
+# Example for OAuth2 customization (Auth0 or custom provider)
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = 'google_client_id')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('GOOGLE_CLIENT_SECRET', default= 'secret_key')
-Authorized_redirect_URIs = 'http://localhost:7000/accounts/openid/login/callback/'
-SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/auth'  # Replace with the token URL
-SOCIAL_AUTH_OAUTH2_TOKEN_URL = 'https://oauth2.googleapis.com/token'  # Replace with the authorization URL
-SOCIAL_AUTH_OAUTH2_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'  # Replace with the user info URL
-
+Authorized_redirect_URIs = env('Authorized_redirect_URIs',default= 'http://localhost:7000/accounts/openid/login/callback/')
+SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = env('SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL',default= 'https://accounts.google.com/o/oauth2/auth')
+SOCIAL_AUTH_OAUTH2_TOKEN_URL = env('SOCIAL_AUTH_OAUTH2_TOKEN_URL',default='https://oauth2.googleapis.com/token')
+SOCIAL_AUTH_OAUTH2_USERINFO_URL = env('SOCIAL_AUTH_OAUTH2_USERINFO_URL',default= 'https://www.googleapis.com/auth/userinfo.profile')

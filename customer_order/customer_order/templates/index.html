@@ -1,0 +1,52 @@
+<!-- templates/google_auth.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Sign In</title>
+    <meta name="google-signin-client_id" content="{{ google_client_id }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div id="g_id_onload"
+         data-client_id="{{ google_client_id }}"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            // Send the token to your backend
+            fetch('/api/google/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    credential: response.credential
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    // Store the token in localStorage
+                    localStorage.setItem('authToken', data.token);
+                    // Redirect to dashboard or home page
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,28 +1,33 @@
-from tokenize import Token
-
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.views import View
+import logging
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Customer, Order
-from .serializer import CustomerSerializer, OrderSerializer, CustomerRegistrationSerializer, CustomerLoginSerializer
+from .serializer import CustomerSerializer, OrderSerializer, CustomerRegistrationSerializer
 from google.oauth2 import id_token
 from django.conf import settings
 from google.auth.transport import requests
 from django.contrib.auth import get_user_model
-import jwt
 User = get_user_model()
+from rest_framework_simplejwt.tokens import RefreshToken
+logger = logging.getLogger(__name__)
 
 class CustomerListAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        customers = Customer.objects.all()
-        serializer = CustomerSerializer(customers, many=True)
-        return Response(serializer.data)
+        try:
+            customers = Customer.objects.all()
+            serializer = CustomerSerializer(customers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error fetching customers: {str(e)}", exc_info=True)
+            return Response(
+                {"error": "Something went wrong while fetching customers."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class CustomerCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -40,50 +45,43 @@ class CustomerCreateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class CustomerRegistrationView(APIView):
-    permission_classes = [AllowAny]  # This will allow access to anyone (no authentication needed)
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         serializer = CustomerRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             customer = serializer.save()
             return Response({
-                "message": "Customer registered successfully!",
-                "customer_id": customer.id,
-                "email": customer.email,
+                "message": "Customer registered successfully!", "data" : serializer.data,
+
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class CustomerLoginView(APIView):
-    permission_classes = [AllowAny]
-    template_name = 'auth.html'
-
-    def get(self, request):
-        # This will simply render the auth.html template
-        return render(request, self.template_name)
-
-    def post(self, request, *args, **kwargs):
-        # Here, you can handle OIDC-based authentication via request.user
-        if request.user.is_authenticated:
-            # Generate or get token for authenticated user
-            token, created = Token.objects.get_or_create(user=request.user)
-            return Response({
-                'message': 'Login successful!',
-                'token': token.key,
-                'email': request.user.email
-            }, status=status.HTTP_200_OK)
-
-        return Response({
-            'error': 'Authentication required'
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-
 class GoogleLoginView(APIView):
-    permission_classes = [AllowAny]  # This will allow access to anyone (no authentication needed)
+    permission_classes = [AllowAny]
+
     def post(self, request):
+        # Try to get token from both request body and Authorization header
         token = request.data.get('token')
 
+        if not token:
+            auth_header = request.headers.get('Authorization', '')
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+
+        if not token:
+            return Response(
+                {"error": "No Google token provided in request body or Authorization header"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get Google Client ID from settings
         google_client_id = getattr(settings, "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY", None)
         if not google_client_id:
-            return Response({"error": "Google Client ID is not set in settings"}, status=400)
+            return Response(
+                {"error": "Google Client ID is not set in settings"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         try:
             # Verify the Google token
             idinfo = id_token.verify_oauth2_token(
@@ -92,38 +90,66 @@ class GoogleLoginView(APIView):
                 google_client_id
             )
 
+            # Verify token issuer
             if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-                raise ValueError('Wrong issuer.')
+                return Response({"error": "Invalid token issuer"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Extract user information
+            email = idinfo.get('email')
+            if not email:
+                return Response(
+                    {"error": "Email not found in Google token"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get additional user info
+            name = idinfo.get('name', '')
+            given_name = idinfo.get('given_name', '')
+
 
             # Get or create user
-            email = idinfo['email']
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
-                    'email': email,
-                    'name': idinfo.get('given_name', ''),
+                    'name': name or given_name,
+                    'is_active': True,
                 }
             )
 
-            # Create JWT token for the user
-            jwt_token = jwt.encode(
-                {'user_id': user.id},
-                settings.SECRET_KEY,
-                algorithm='HS256'
-            )
+            # Generate JWT tokens using Simple JWT
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
 
-            return Response({
-                'token': jwt_token,
+            response_data = {
+                'access_token': access_token,
+                'refresh_token': str(refresh),
                 'user': {
+                    'id': user.id,
                     'email': user.email,
                     'name': user.name,
-                    'customer_code': user.customer_code
-                }
-            })
+                },
+                'created': created
+            }
+
+            # Include customer_code if available
+            if hasattr(user, 'customer_code'):
+                response_data['user']['customer_code'] = user.customer_code
+
+            return Response(response_data, status=status.HTTP_200_OK)
 
         except ValueError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': f"Token verification failed: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': f"Unexpected error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+
+            )
 class CustomerDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get_customer(self,pk):
         try:
             return Customer.objects.get(pk=pk)
@@ -161,21 +187,20 @@ class CustomerDetailAPIView(APIView):
         return Response({"detail": "Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 class OrderListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         orders = Order.objects.all()
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 class OrderCreateAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print(f"User: {request.user}")  # Add this for debugging
-        print(f"Auth: {request.auth}")  # Add this for debugging
-
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                serializer.save(user=request.user)
+                serializer.save()
                 return Response({
                     "message": "Order created successfully!",
                     "data": serializer.data
@@ -188,6 +213,7 @@ class OrderCreateAPIView(APIView):
 
 
 class OrderDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get_order(self,pk):
         try:
            return Order.objects.get(pk=pk)
@@ -222,3 +248,5 @@ class OrderDetailAPIView(APIView):
 
         order.delete()
         return Response({"detail": "Order Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
