@@ -43,13 +43,13 @@ CORS_ALLOW_CREDENTIALS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'customer_order_app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'customer_order_app',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -123,16 +123,21 @@ WSGI_APPLICATION = 'customer_order.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'test_db',
+        'USER': 'postgres',
+        'PASSWORD': '2000',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -151,7 +156,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -159,16 +163,11 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 STATIC_URL = '/static/'
-
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGGING = {
@@ -189,11 +188,13 @@ LOGGING = {
         },
     },
 }
-
 # Example for OAuth2 customization (Auth0 or custom provider)
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = 'google_client_id')
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('GOOGLE_CLIENT_SECRET', default= 'secret_key')
 Authorized_redirect_URIs = env('Authorized_redirect_URIs',default= 'http://localhost:7000/accounts/openid/login/callback/')
 SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = env('SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL',default= 'https://accounts.google.com/o/oauth2/auth')
 SOCIAL_AUTH_OAUTH2_TOKEN_URL = env('SOCIAL_AUTH_OAUTH2_TOKEN_URL',default='https://oauth2.googleapis.com/token')
 SOCIAL_AUTH_OAUTH2_USERINFO_URL = env('SOCIAL_AUTH_OAUTH2_USERINFO_URL',default= 'https://www.googleapis.com/auth/userinfo.profile')
+AFRICASTALKING_USERNAME = 'sandbox'
+AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'sandbox_api_key')
+AFRICASTALKING_SENDER_ID = 'Sandbox'

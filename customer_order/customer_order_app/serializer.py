@@ -30,7 +30,7 @@ class CustomerRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = Customer
-        fields = ['name', 'customer_code', 'email', 'phone_number', 'password']
+        fields = ['id','name', 'customer_code', 'email', 'phone_number', 'password']
 
     def create(self, validated_data):
         # Hash the password before saving
