@@ -29,6 +29,8 @@ class Customer(AbstractBaseUser):
     password = models.CharField(max_length=128)
     created_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)  # Add this field
+
     objects = CustomerManager()
     USERNAME_FIELD = 'email'
 
@@ -66,3 +68,9 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.order_number} - {self.item}"
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            # Generate order number if not provided
+            self.order_number = f"{timezone.now().strftime('%Y%m%d')}-{str(random.randint(1000, 9999))}"
+        super().save(*args, **kwargs)

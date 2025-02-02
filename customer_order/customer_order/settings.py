@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-import africastalking
+# import africastalking
 import environ
 from django.conf import settings
 
@@ -24,6 +24,7 @@ from datetime import timedelta
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-ys$$2m3zv@5d)5&q920y9qo@9@ym90#s_(jq9df-l@(eczd9o%'
+# SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -195,6 +196,6 @@ Authorized_redirect_URIs = env('Authorized_redirect_URIs',default= 'http://local
 SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = env('SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL',default= 'https://accounts.google.com/o/oauth2/auth')
 SOCIAL_AUTH_OAUTH2_TOKEN_URL = env('SOCIAL_AUTH_OAUTH2_TOKEN_URL',default='https://oauth2.googleapis.com/token')
 SOCIAL_AUTH_OAUTH2_USERINFO_URL = env('SOCIAL_AUTH_OAUTH2_USERINFO_URL',default= 'https://www.googleapis.com/auth/userinfo.profile')
-AFRICASTALKING_USERNAME = 'sandbox'
-AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'sandbox_api_key')
-AFRICASTALKING_SENDER_ID = 'Sandbox'
+AFRICASTALKING_USERNAME = env('AFRICASTALKING_USERNAME', default = 'sandbox')
+AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'atsk_55be84f038ab74e599f195923af33e10b54abe6ff7ac540e9d42e9da2740a357691b7f65')
+AFRICASTALKING_SENDER_ID = env('AFRICASTALKING_SENDER_ID', default = 'Sandbox')
