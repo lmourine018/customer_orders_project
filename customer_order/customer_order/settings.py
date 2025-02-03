@@ -11,11 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
-# import africastalking
 import environ
 from django.conf import settings
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 from datetime import timedelta
@@ -50,14 +47,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'customer_order_app',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'rest_framework',
     'rest_framework.authtoken',
     'oauth2_provider',
-    'social_django'
+    'social_django',
+    'customer_order_app',
+
 ]
 SITE_ID = 1
 AUTHENTICATION_BACKENDS = [

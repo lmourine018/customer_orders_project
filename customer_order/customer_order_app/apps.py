@@ -14,4 +14,4 @@ class CustomerConfig(AppConfig):
 
 
 # Set the default app config for backward compatibility
-default_app_config = 'customer_order_app.apps.CustomerConfig'
+# default_app_config = 'customer_order_app.apps.CustomerConfig'

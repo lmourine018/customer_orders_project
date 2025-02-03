@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import Customer, Order
+from customer_order_app.models import Customer, Order
 from .serializer import CustomerSerializer, OrderSerializer, CustomerRegistrationSerializer
 from google.oauth2 import id_token
 from django.conf import settings
@@ -41,7 +41,7 @@ class CustomerCreateAPIView(APIView):
 
         serializer = CustomerSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class CustomerRegistrationView(APIView):
@@ -213,31 +213,37 @@ class OrderCreateAPIView(APIView):
 
 
 class OrderDetailAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    def get_order(self,pk):
+
+    def get_order(self, pk):
         try:
-           return Order.objects.get(pk=pk)
+            return Order.objects.get(pk=pk)
         except Order.DoesNotExist:
             raise NotFound(f'Order with id {pk} does not exist')
-    def get(self, request, pk):
-        try:
-            order = self.get_order(pk)
-        except Order.DoesNotExist:
-            return Response({"detail": "Order Not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    def get(self, request, pk):
+        order = self.get_order(pk)
         serializer = OrderSerializer(order)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        try:
-            order = self.get_order(pk)
-        except Order.DoesNotExist:
-            return Response({"detail": "Order Not found."}, status=status.HTTP_404_NOT_FOUND)
+        order = self.get_order(pk)
 
-        serializer = OrderSerializer(order, data=request.data)
+        # Ensure status is uppercase if provided
+        if 'status' in request.data:
+            request.data['status'] = request.data['status'].upper()
+
+        serializer = OrderSerializer(order, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            try:
+                updated_order = serializer.save()
+                return Response(OrderSerializer(updated_order).data)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Print validation errors for debugging
+        print("Validation Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):

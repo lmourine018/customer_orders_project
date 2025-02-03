@@ -1,8 +1,5 @@
-import uuid
 from random import random
-
 from django.utils import timezone
-
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.db import models
 
@@ -30,10 +27,8 @@ class Customer(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)  # Add this field
-
     objects = CustomerManager()
     USERNAME_FIELD = 'email'
-
     # Define other required fields for creation of superuser
     REQUIRED_FIELDS = ['name', 'phone_number', 'customer_code']
     def __str__(self):
@@ -49,6 +44,9 @@ class Customer(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    class Meta:
+        app_label = 'customer_order_app'
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
