@@ -1,3 +1,5 @@
+import os
+import django
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -8,8 +10,10 @@ from .serializer import CustomerSerializer, OrderSerializer
 from unittest.mock import patch, MagicMock
 import json
 from rest_framework_simplejwt.tokens import RefreshToken
-
 User = get_user_model()
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "customer_order.settings")
+django.setup()
 
 
 class CustomerViewsTest(APITestCase):
@@ -186,8 +190,8 @@ class OrderViewsTest(APITestCase):
         data = {
             'customer_id': self.customer.id,
             'amount': 200.00,
-            'status': 'COMPLETED',
-            'order_number': '0001',
+            'status': 'PROCESSED',
+            'order_number': '0003',
             'item': 'Updated Item'
         }
         response = self.client.put(
@@ -203,4 +207,4 @@ class OrderViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.order.refresh_from_db()
         self.assertEqual(float(self.order.amount), 200.00)
-        self.assertEqual(self.order.status, 'COMPLETED')
+        self.assertEqual(self.order.status, 'PROCESSED')
