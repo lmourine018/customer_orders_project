@@ -43,6 +43,12 @@ jobs:
           DATABASE_URL: postgres://django:django@localhost:5432/test_db
         run: |
           python manage.py migrate
+      - name: start project
+        env:
+          DATABASE_URL: postgres://django:django@localhost:5432/test_db
+
+        run: |
+          python manage.py runserver
 
       - name: Run tests
         env:
