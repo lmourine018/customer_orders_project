@@ -32,3 +32,6 @@ jobs:
       run: |
         railway login --token $RAILWAY_TOKEN
         railway up --detach
+    - name: Run migrations
+      run: |
+        railway run python manage.py migrate
