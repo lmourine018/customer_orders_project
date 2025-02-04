@@ -26,6 +26,15 @@ jobs:
       run: |
         npm install -g @railway/cli
 
+    - name: Check Railway status
+      run: |
+       railway status
+    - name: Install Railway CLI
+      run: |
+       npm install -g @railway/cli@latest
+    - name: Check for requirements.txt
+      run: |
+        ls -la
     - name: Deploy to Railway
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
