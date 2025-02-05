@@ -192,3 +192,5 @@ SOCIAL_AUTH_OAUTH2_USERINFO_URL = env('SOCIAL_AUTH_OAUTH2_USERINFO_URL',default=
 AFRICASTALKING_USERNAME = env('AFRICASTALKING_USERNAME', default = 'sandbox')
 AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'atsk_55be84f038ab74e599f195923af33e10b54abe6ff7ac540e9d42e9da2740a357691b7f65')
 AFRICASTALKING_SENDER_ID = env('AFRICASTALKING_SENDER_ID', default = 'Sandbox')
+
+CELERY_BROKER_URL = config("REDIS_URL", default="redis://default:FnihkxsdjxALXtDAlAIdpzcgbSJUznzI@redis.railway.internal:6379")
