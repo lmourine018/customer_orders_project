@@ -118,8 +118,6 @@ WSGI_APPLICATION = 'customer_order.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -159,8 +157,6 @@ USE_I18N = True
 
 USE_TZ = True
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-# Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -192,5 +188,4 @@ SOCIAL_AUTH_OAUTH2_USERINFO_URL = env('SOCIAL_AUTH_OAUTH2_USERINFO_URL',default=
 AFRICASTALKING_USERNAME = env('AFRICASTALKING_USERNAME', default = 'sandbox')
 AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'atsk_55be84f038ab74e599f195923af33e10b54abe6ff7ac540e9d42e9da2740a357691b7f65')
 AFRICASTALKING_SENDER_ID = env('AFRICASTALKING_SENDER_ID', default = 'Sandbox')
-
 CELERY_BROKER_URL = config("REDIS_URL", default="redis://default:FnihkxsdjxALXtDAlAIdpzcgbSJUznzI@redis.railway.internal:6379")
