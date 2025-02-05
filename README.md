@@ -9,6 +9,7 @@ Django-based web application for managing customers and orders with OpenID Conne
 - SMS notifications via Africa's Talking Sms and sandbox
 - Automated deployment on Railway
 - Continuous Integration and Deployment (CI/CD)
+- Containerization using Docker
 - Flexible customer and order models
 - Coverage testing setup
 
