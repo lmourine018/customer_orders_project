@@ -22,13 +22,12 @@ class OrderSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        # Explicitly extract customer from validated_data
         customer = validated_data.pop('customer', None)
         order = Order.objects.create(customer=customer, **validated_data)
         return order
 
     def update(self, instance, validated_data):
-        # Handle customer_id if provided
+        # Handling customer_id if provided
         if 'customer_id' in validated_data:
             instance.customer_id = validated_data.pop('customer_id')
 
@@ -63,7 +62,7 @@ class CustomerRegistrationSerializer(serializers.ModelSerializer):
         fields = ['id','name', 'customer_code', 'email', 'phone_number', 'password']
 
     def create(self, validated_data):
-        # Hash the password before saving
+        # Hashing the password before saving
         password = validated_data.pop('password')
         customer = Customer.objects.create(**validated_data)
         customer.set_password(password)

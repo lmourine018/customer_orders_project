@@ -29,7 +29,6 @@ class Customer(AbstractBaseUser):
     is_active = models.BooleanField(default=True)  # Add this field
     objects = CustomerManager()
     USERNAME_FIELD = 'email'
-    # Define other required fields for creation of superuser
     REQUIRED_FIELDS = ['name', 'phone_number', 'customer_code']
     def __str__(self):
         return f"{self.name} ({self.customer_code})"
@@ -42,16 +41,11 @@ class Customer(AbstractBaseUser):
     def is_authenticated(self):
         return True
 
-    def __str__(self):
-        return self.email
-
-    class Meta:
-        app_label = 'customer_order_app'
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
-    item = models.CharField(max_length=200)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    item = models.CharField(max_length=200, null=False)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     order_number = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(

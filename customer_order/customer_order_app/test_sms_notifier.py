@@ -6,10 +6,8 @@ from django.conf import settings
 class SMSNotifier:
     def __init__(self):
         try:
-            # Get credentials with detailed validation
             self.username = getattr(settings, 'AFRICASTALKING_USERNAME', None)
             self.api_key = getattr(settings, 'AFRICASTALKING_API_KEY', None)
-
             print("\nInitial Credential Check:")
             print(f"Username type: {type(self.username)}")
             print(f"Username value: {self.username}")
@@ -21,15 +19,15 @@ class SMSNotifier:
 
             self.username = self.username.strip().lower()  # Normalize username
             if self.username != 'sandbox':
-                raise ValueError("For testing, username must be 'sandbox'")
+                raise ValueError("while testing, username must be 'sandbox'")
 
             # Validate API key
             if not self.api_key or not isinstance(self.api_key, str):
-                raise ValueError("API key must be a non-empty string")
+                raise ValueError("API key is a non-empty string")
 
             self.api_key = self.api_key.strip()
             if not self.api_key.startswith('atsk_'):
-                raise ValueError("Invalid API key format - should start with 'atsk_'")
+                raise ValueError("Invalid API key format")
 
             print("\nTrying to initialize Africa's Talking...")
             # Initialize with validated credentials

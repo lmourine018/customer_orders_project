@@ -11,7 +11,3 @@ class CustomerConfig(AppConfig):
     def ready(self):
         # Import signals to ensure they are registered
         import customer_order_app.signals
-
-
-# Set the default app config for backward compatibility
-# default_app_config = 'customer_order_app.apps.CustomerConfig'

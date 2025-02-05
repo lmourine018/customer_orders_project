@@ -25,7 +25,6 @@ class CustomerListAPIView(APIView):
         except Exception as e:
             logger.error(f"Error fetching customers: {str(e)}", exc_info=True)
             return Response(
-                {"error": "Something went wrong while fetching customers."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

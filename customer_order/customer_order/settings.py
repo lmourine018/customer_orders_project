@@ -14,8 +14,6 @@ from pathlib import Path
 import environ
 from decouple import config
 from django.conf import settings
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 from datetime import timedelta
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -31,6 +29,7 @@ environ.Env.read_env()
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'customer_order_app.Customer'
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # If you're using credentials like cookies or HTTP authentication, enable this
 CORS_ALLOW_CREDENTIALS = True
@@ -132,11 +131,6 @@ DATABASES = {
     }
 }
 
-
-
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
@@ -166,7 +160,6 @@ USE_I18N = True
 USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-STATIC_URL = '/static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

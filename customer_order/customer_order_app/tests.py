@@ -1,14 +1,11 @@
 import os
 import django
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from customer_order_app.models import Customer, Order
 from .serializer import CustomerSerializer, OrderSerializer
-from unittest.mock import patch, MagicMock
-import json
 from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 
@@ -29,8 +26,8 @@ class CustomerViewsTest(APITestCase):
 
         # Create test customer
         self.customer = Customer.objects.create(
-            name="John Doe",
-            email="johndoe@example.com",
+            name="Customer Test",
+            email="testcustomer@example.com",
             phone_number="+254723456789",
             customer_code="00001"
         )
@@ -179,7 +176,7 @@ class OrderViewsTest(APITestCase):
             data,
             format='json'
         )
-        print(response.data)  # Print the response data to see validation errors
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Order.objects.count(), 2)
         new_order = Order.objects.get(order_number='0003')
@@ -200,10 +197,8 @@ class OrderViewsTest(APITestCase):
             format='json'
         )
 
-        # Print detailed error information
         print("Response Status Code:", response.status_code)
         print("Response Data:", response.data)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.order.refresh_from_db()
         self.assertEqual(float(self.order.amount), 200.00)
