@@ -18,7 +18,6 @@ from datetime import timedelta
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-ys$$2m3zv@5d)5&q920y9qo@9@ym90#s_(jq9df-l@(eczd9o%'
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 
@@ -179,13 +178,13 @@ LOGGING = {
     },
 }
 # Example for OAuth2 customization (Auth0 or custom provider)
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com')
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = 'GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('GOOGLE_CLIENT_SECRET', default= 'secret_key')
 Authorized_redirect_URIs = env('Authorized_redirect_URIs',default= 'http://localhost:7000/accounts/openid/login/callback/')
 SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = env('SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL',default= 'https://accounts.google.com/o/oauth2/auth')
 SOCIAL_AUTH_OAUTH2_TOKEN_URL = env('SOCIAL_AUTH_OAUTH2_TOKEN_URL',default='https://oauth2.googleapis.com/token')
 SOCIAL_AUTH_OAUTH2_USERINFO_URL = env('SOCIAL_AUTH_OAUTH2_USERINFO_URL',default= 'https://www.googleapis.com/auth/userinfo.profile')
 AFRICASTALKING_USERNAME = env('AFRICASTALKING_USERNAME', default = 'sandbox')
-AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'atsk_55be84f038ab74e599f195923af33e10b54abe6ff7ac540e9d42e9da2740a357691b7f65')
+AFRICASTALKING_API_KEY = env('Africas_Talking_Api_Key', default= 'Africas_Talking_Api_Key')
 AFRICASTALKING_SENDER_ID = env('AFRICASTALKING_SENDER_ID', default = 'Sandbox')
 CELERY_BROKER_URL = config("REDIS_URL", default="redis://default:FnihkxsdjxALXtDAlAIdpzcgbSJUznzI@redis.railway.internal:6379")
