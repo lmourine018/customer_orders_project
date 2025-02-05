@@ -1,29 +1,29 @@
 # Customers and Orders Management System
 
 ## Overview
-Django-based web application for managing customers and orders with OpenID Connect authentication and SMS notifications.
+Django-based web application for managing customers and orders with OpenID Connect authentication, SMS notifications, and automated deployment pipeline.
 
 ## Features
 - RESTful API for customer and order management
-- OAuth 2.0 OpenID Connect authentication
+- OAuth 2.0 with OpenID Connect authentication
 - SMS notifications via Africa's Talking
+- Automated deployment on Railway
+- Continuous Integration and Deployment (CI/CD)
 - Flexible customer and order models
-- Comprehensive testing and CI/CD setup
-- Railway deployment support
+- Comprehensive testing setup
 
-## Installation
-
-### Prerequisites
+## Prerequisites
 - **Python 3.9+**
 - **Django 4.2.9**
 - **PostgreSQL** 16+
 - **Git** installed
 - **Virtualenv** for virtual environment management
-- **OAuth 2.0** provider credentials
-- **Africa's Talking** account and API key
-- **Railway** account for deployment
+- **Africa's Talking** account
+- **Railway** account
+- **GitHub** account for CI/CD
 
-### Steps
+## Installation
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/lmourine018/customer_orders_project.git
@@ -49,170 +49,237 @@ Django-based web application for managing customers and orders with OpenID Conne
    pip install -r requirements.txt
    ```
 
-4. Set up your PostgreSQL database and create the necessary tables.
+4. Configure environment variables (see Configuration section).
 
-5. Configure environment variables (see `.env` file setup in [Configuration](#configuration)).
-
-6. Apply database migrations:
+5. Apply database migrations:
    ```bash
    python manage.py makemigrations
    python manage.py migrate
    ```
 
-7. Create a superuser for accessing the Django admin panel:
+6. Create a superuser:
    ```bash
    python manage.py createsuperuser
-   ```
-
-8. Start the development server:
-   ```bash
-   python manage.py runserver
    ```
 
 ## Configuration
 
 ### Environment Variables
-Create a `.env` file in the root directory with the following configurations:
+Create a `.env` file in the root directory:
 
 ```env
+# Django Settings
 DEBUG=True
 SECRET_KEY=your_secret_key
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Database configuration
+# Database
 DB_NAME=db_name
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_HOST=localhost
 DB_PORT=5432
 
-# OAuth 2.0 Configuration
-OAUTH_CLIENT_ID=your_client_id
-OAUTH_CLIENT_SECRET=your_client_secret
-OAUTH_AUTHORIZATION_URL=https://your-auth-server/authorize
-OAUTH_TOKEN_URL=https://your-auth-server/token
-OAUTH_USERINFO_URL=https://your-auth-server/userinfo
-OAUTH_REDIRECT_URI=http://localhost:8000/oauth/callback
+# OAuth 2.0 / OpenID Connect
+OIDC_RP_CLIENT_ID=your_client_id
+OIDC_RP_CLIENT_SECRET=your_client_secret
+OIDC_RP_SIGN_ALGO=RS256
+OIDC_OP_AUTHORIZATION_ENDPOINT=https://your-provider/.well-known/openid-configuration/authorize
+OIDC_OP_TOKEN_ENDPOINT=https://your-provider/.well-known/openid-configuration/token
+OIDC_OP_USER_ENDPOINT=https://your-provider/.well-known/openid-configuration/userinfo
+OIDC_OP_JWKS_ENDPOINT=https://your-provider/.well-known/openid-configuration/jwks
 
-# Africa's Talking Configuration
+# Africa's Talking SMS
 AT_USERNAME=your_username
 AT_API_KEY=your_api_key
 AT_SENDER_ID=your_sender_id
 
-# Railway Configuration
-RAILWAY_PROJECT_ID=your_project_id
-DATABASE_URL=your_railway_postgres_url
+# Railway
+RAILWAY_TOKEN=your_railway_token
 ```
 
-### OAuth 2.0 OpenID Connect Setup
+### OAuth 2.0 / OpenID Connect Setup
 
-1. Configure your OAuth provider settings in `settings.py`:
-   ```python
-   OAUTH2_CONFIG = {
-       'CLIENT_ID': env('OAUTH_CLIENT_ID'),
-       'CLIENT_SECRET': env('OAUTH_CLIENT_SECRET'),
-       'AUTHORIZATION_URL': env('OAUTH_AUTHORIZATION_URL'),
-       'TOKEN_URL': env('OAUTH_TOKEN_URL'),
-       'USERINFO_URL': env('OAUTH_USERINFO_URL'),
-       'REDIRECT_URI': env('OAUTH_REDIRECT_URI'),
-       'SCOPE': 'openid profile email',
-   }
+1. Install required packages:
+   ```bash
+   pip install mozilla-django-oidc django-oauth-toolkit
    ```
 
-2. Include OAuth URLs in `urls.py`:
+2. Add to INSTALLED_APPS in settings.py:
+   ```python
+   INSTALLED_APPS = [
+       ...
+       'mozilla_django_oidc',
+       'oauth2_provider',
+   ]
+   ```
+
+3. Configure authentication backend:
+   ```python
+   AUTHENTICATION_BACKENDS = (
+       'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+       'django.contrib.auth.backends.ModelBackend',
+   )
+   ```
+
+4. Add URL patterns in urls.py:
    ```python
    urlpatterns = [
-       path('oauth/login/', views.oauth_login, name='oauth_login'),
-       path('oauth/callback/', views.oauth_callback, name='oauth_callback'),
-       path('oauth/logout/', views.oauth_logout, name='oauth_logout'),
+       ...
+       path('oidc/', include('mozilla_django_oidc.urls')),
+       path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
    ]
    ```
 
 ### Africa's Talking SMS Integration
 
-1. Install the Africa's Talking Python package:
+1. Install the package:
    ```bash
    pip install africastalking
    ```
 
-2. Create an SMS service utility:
+2. Create an SMS service (services/sms.py):
    ```python
    import africastalking
    from django.conf import settings
 
-   def send_sms(phone_number, message):
-       africastalking.initialize(
-           username=settings.AT_USERNAME,
-           api_key=settings.AT_API_KEY
-       )
-       sms = africastalking.SMS
-       response = sms.send(
-           message=message,
-           recipients=[phone_number],
-           sender_id=settings.AT_SENDER_ID
-       )
-       return response
+   class SMSService:
+       def __init__(self):
+           self.username = settings.AT_USERNAME
+           self.api_key = settings.AT_API_KEY
+           africastalking.initialize(self.username, self.api_key)
+           self.sms = africastalking.SMS
+
+       def send_sms(self, phone_number, message):
+           return self.sms.send(message, [phone_number], settings.AT_SENDER_ID)
    ```
 
-### Railway Deployment
+## Deployment on Railway
 
-1. Install Railway CLI:
-   ```bash
-   npm i -g @railway/cli
+1. Create a `railway.json` file:
+   ```json
+   {
+     "schema": "https://railway.app/railway.schema.json",
+     "build": {
+       "builder": "NIXPACKS"
+     },
+     "deploy": {
+       "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi",
+       "restartPolicyType": "ON_FAILURE",
+       "restartPolicyMaxRetries": 10
+     }
+   }
    ```
 
-2. Login to Railway:
+2. Create a `Procfile`:
+   ```
+   web: gunicorn config.wsgi:application
+   ```
+
+3. Deploy using Railway CLI:
    ```bash
    railway login
-   ```
-
-3. Initialize Railway project:
-   ```bash
-   railway init
-   ```
-
-4. Add PostgreSQL plugin:
-   ```bash
-   railway add
-   ```
-
-5. Deploy your application:
-   ```bash
+   railway link
    railway up
    ```
 
-## API Endpoints
+## CI/CD Pipeline
 
-### Authentication Endpoints
-- `GET /oauth/login/`: Initiates OAuth login flow
-- `GET /oauth/callback/`: OAuth callback handler
-- `POST /oauth/logout/`: Logs out the user
+### GitHub Actions Workflow
 
-### Resource Endpoints
-- `GET /api/customers/`: List customers
-- `POST /api/customers/`: Create customer
-- `GET /api/orders/`: List orders
-- `POST /api/orders/`: Create order
+Create `.github/workflows/ci-cd.yml`:
 
-## Security Considerations
-- Always use HTTPS in production
-- Implement CSRF protection
-- Store sensitive credentials in environment variables
-- Regularly update dependencies
-- Implement rate limiting
-- Use secure session management
+```yaml
+name: CI/CD Pipeline
 
-## Testing
-Run the test suite:
-```bash
-python manage.py test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+    
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Tests
+      env:
+        DEBUG: True
+        SECRET_KEY: test-key
+        DB_NAME: test_db
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
+      run: |
+        python manage.py test
+        
+    - name: Run Linting
+      run: |
+        pip install flake8
+        flake8 .
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Railway CLI
+      run: npm i -g @railway/cli
+    
+    - name: Deploy to Railway
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      run: railway up --service ${{ secrets.RAILWAY_SERVICE_NAME }}
 ```
 
-Generate coverage report:
+## Testing
+
+Run tests with coverage:
 ```bash
 coverage run manage.py test
 coverage report
 ```
+
+## API Endpoints
+
+### Authentication Endpoints
+- `/oidc/authenticate/`: Initiate OpenID Connect authentication
+- `/oidc/callback/`: OpenID Connect callback URL
+- `/o/token/`: OAuth2 token endpoint
+- `/o/authorize/`: OAuth2 authorization endpoint
+
+### API Endpoints
+- `/api/customers/`: Customer management
+- `/api/orders/`: Order management
+- `/api/sms/send/`: Send SMS notifications
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
