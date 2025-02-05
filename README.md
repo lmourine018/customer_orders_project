@@ -6,11 +6,11 @@ Django-based web application for managing customers and orders with OpenID Conne
 ## Features
 - RESTful API for customer and order management
 - OAuth 2.0 with OpenID Connect authentication
-- SMS notifications via Africa's Talking
+- SMS notifications via Africa's Talking Sms and sandbox
 - Automated deployment on Railway
 - Continuous Integration and Deployment (CI/CD)
 - Flexible customer and order models
-- Comprehensive testing setup
+- Coverage testing setup
 
 ## Prerequisites
 - **Python 3.9+**
@@ -127,7 +127,7 @@ RAILWAY_TOKEN=your_railway_token
    urlpatterns = [
        ...
        path('oidc/', include('mozilla_django_oidc.urls')),
-       path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+       path('occounts/', include('oauth2_provider.urls', namespace='oauth2_provider')),
    ]
    ```
 
@@ -271,15 +271,15 @@ coverage report
 ## API Endpoints
 
 ### Authentication Endpoints
-- `/oidc/authenticate/`: Initiate OpenID Connect authentication
-- `/oidc/callback/`: OpenID Connect callback URL
-- `/o/token/`: OAuth2 token endpoint
+- `/accounts.google.com/o/oauth2/auth/`: Initiate OpenID Connect authentication
+- `/api/auth/google/`: OAuth2 token endpoint
 - `/o/authorize/`: OAuth2 authorization endpoint
 
 ### API Endpoints
 - `/api/customers/`: Customer management
+- `/api/customers/id`: Customer management Details
+- `/api/orders/id`: Order Details
 - `/api/orders/`: Order management
-- `/api/sms/send/`: Send SMS notifications
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
