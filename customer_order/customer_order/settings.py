@@ -16,6 +16,8 @@ from decouple import config
 from django.conf import settings
 from datetime import timedelta
 
+from django.conf.global_settings import STATIC_ROOT
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-ys$$2m3zv@5d)5&q920y9qo@9@ym90#s_(jq9df-l@(eczd9o%'
 DEBUG = True
@@ -155,7 +157,8 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-# Static files (CSS, JavaScript, Images)
+STATIC_URL = "/static/"
+STATIC_ROOT = "."
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -178,7 +181,7 @@ LOGGING = {
     },
 }
 # Example for OAuth2 customization (Auth0 or custom provider)
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = 'GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('GOOGLE_CLIENT_ID', default = '302335069573-pjd95ekmam8ap8fkr2hc0lij3a1hgfn7.apps.googleusercontent.com')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('GOOGLE_CLIENT_SECRET', default= 'secret_key')
 Authorized_redirect_URIs = env('Authorized_redirect_URIs',default= 'http://localhost:7000/accounts/openid/login/callback/')
 SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL = env('SOCIAL_AUTH_OAUTH2_AUTHORIZATION_URL',default= 'https://accounts.google.com/o/oauth2/auth')

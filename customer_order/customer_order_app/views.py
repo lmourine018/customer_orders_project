@@ -186,7 +186,7 @@ class CustomerDetailAPIView(APIView):
         return Response({"detail": "Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 class OrderListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         orders = Order.objects.all()
         serializer = OrderSerializer(orders, many=True)
